@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Post\CreatePostRequest;
+use App\Http\Requests\Post\IndexPostRequest;
+use App\Http\Requests\Post\UpdatePostRequest;
+use App\Http\Resources\PostCollection;
 use App\Http\Resources\PostResource;
+use App\Models\Post;
 use App\Service\PostService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class PostController extends Controller
 {
@@ -26,10 +31,11 @@ class PostController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(IndexPostRequest $request)
     {
-        die("D");
-        //
+        $posts = $this->postService->index($request);
+
+        return PostCollection::make($posts);
     }
 
     /**
@@ -45,57 +51,53 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return PostResource
      */
-    public function store(Request $request): PostResource
+    public function store(CreatePostRequest $request): PostResource
     {
         $post = $this->postService->create($request->post());
-        return  PostResource::make($post);
+        return PostResource::make($post);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return PostResource
      */
-    public function show($id)
+    public function show(Post $post)
     {
-        //
+        $post = $this->postService->show($post);
+
+        return PostResource::make($post);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return PostResource
      */
-    public function update(Request $request, $id)
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        //
+        $post = $this->postService->update($post, $request->validated());
+
+        return PostResource::make($post);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return JsonResponse
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $this->postService->destroy($post);
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
 }
